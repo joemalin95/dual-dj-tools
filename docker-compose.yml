@@ -1,0 +1,28 @@
+version: "3.9"
+   
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+  db:
+    image: postgres
+    volumes:
+      - ./src/data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  web:
+    build: ./src
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./src:/code
+      - /var/certbot-etc/live/pluginfox.malin.software/cert.pem:/etc/ssl/cert.pem
+      - /var/certbot-etc:/etc/letsencrypt
+      - /var/certbot-etc/www:/var/www/certbot
+    ports:
+      - "3002:8000"
+    depends_on:
+      - db
+      - redis

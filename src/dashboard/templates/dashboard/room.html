@@ -1,0 +1,85 @@
+<!-- chat/templates/chat/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Prindy J</title>
+</head>
+<body>
+    <div id="container">
+        <h1 id="title">Prindy J</h1>
+        <div id="chat-message-submit" type="button" value="Transitioning">
+            Wait...
+        </div>
+    </div>
+    <script>
+        var trans_bool = false;
+        const chatSocket = new WebSocket(
+            'wss://'
+            + window.location.host
+            + '/ws/dashboard/'
+        );
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        chatSocket.onmessage = function(e) {
+            const json_data = JSON.parse(e.data);
+            console.log(json_data.transitioning);
+            trans_bool = (json_data.transitioning);
+
+            if (trans_bool) {
+                // go 
+                el = document.querySelector("#chat-message-submit");
+                el.style.backgroundColor = "#4caf50";
+                el.innerHTML = "Ready to transition!";
+            } else {
+                // wait
+                el.style.backgroundColor = "#f44336";
+                el.innerHTML = "Wait...";
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            transitioning = !trans_bool;
+            console.log(transitioning);
+
+            chatSocket.send(JSON.stringify({
+                'transitioning': transitioning
+            }));
+        };
+    </script>
+<style>
+    body {
+        font-family: sans-serif;
+        font-size: 75px;
+        background-color:black;
+    }
+
+    #title {
+        color: #fff;
+        font-size: 1.5em;
+        margin-bottom: 10vh;
+    }
+    #container {
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5vw;
+    }
+    #chat-message-submit {
+        min-height: 90vw;
+        min-width:90vw;
+        width:90vw;
+        background-color:red;
+        border-radius: 10%;
+        color: #fff;
+        display:flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.75em;
+    }
+</style>
+</body>
+</html>
