@@ -26,24 +26,22 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        transitioning = text_data_json['transitioning']
-        print(transitioning)
+        state = text_data_json['state']
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
                 'type': 'chat_message',
-                'transitioning': transitioning
+                'state': state
             }
         )
 
     # Receive message from room group
     def chat_message(self, event):
-        transitioning = event['transitioning']
+        state = event['state']
 
-        print(transitioning)
         # Send message to WebSocket
         self.send(text_data=json.dumps({
-            'transitioning': transitioning
+            'state': state
         }))

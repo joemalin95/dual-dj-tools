@@ -13,7 +13,7 @@
         </div>
     </div>
     <script>
-        var trans_bool = false;
+        var state = "WAIT";
         const chatSocket = new WebSocket(
             'wss://'
             + window.location.host
@@ -26,27 +26,39 @@
 
         chatSocket.onmessage = function(e) {
             const json_data = JSON.parse(e.data);
-            console.log(json_data.transitioning);
-            trans_bool = (json_data.transitioning);
+            state = json_data.state;
+            el = document.querySelector("#chat-message-submit");
 
-            if (trans_bool) {
-                // go 
-                el = document.querySelector("#chat-message-submit");
-                el.style.backgroundColor = "#4caf50";
-                el.innerHTML = "Ready to transition!";
-            } else {
-                // wait
+            if (state.toUpperCase() === "WAIT") {
                 el.style.backgroundColor = "#f44336";
                 el.innerHTML = "Wait...";
+            } else if (state.toUpperCase() === "CURRENT_SONG") {
+                // go 
+                el.style.backgroundColor = "#ffc107";
+                el.innerHTML = "Get ready...";
+            } else if (state.toUpperCase() === "READY") {
+                // go 
+                el.style.backgroundColor = "#4caf50";
+                el.innerHTML = "Go!";
+            } else {
+                // unkown state
+                el.style.backgroundColor = "#999";
+                el.innerHTML = "Unkown State";
             }
         };
 
         document.querySelector('#chat-message-submit').onclick = function(e) {
-            transitioning = !trans_bool;
-            console.log(transitioning);
-
+            if (state.toUpperCase() == "WAIT") {
+                state = "CURRENT_SONG";
+            } else if (state.toUpperCase() == "CURRENT_SONG") {
+                state = "READY";
+            } else if (state.toUpperCase() == "READY") {
+                state = "WAIT";
+            } else {
+                state = "WAIT";
+            }
             chatSocket.send(JSON.stringify({
-                'transitioning': transitioning
+                'state': state 
             }));
         };
     </script>
@@ -72,13 +84,14 @@
         min-height: 90vw;
         min-width:90vw;
         width:90vw;
-        background-color:red;
+        background-color:#f44336;
         border-radius: 10%;
         color: #fff;
         display:flex;
         justify-content: center;
         align-items: center;
         font-size: 0.75em;
+        font-weight:bold;
     }
 </style>
 </body>
